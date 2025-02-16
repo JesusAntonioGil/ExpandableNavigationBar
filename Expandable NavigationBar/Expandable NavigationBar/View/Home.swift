@@ -27,6 +27,7 @@ struct Home: View {
             }
             .animation(.snappy(duration: 0.3, extraBounce: 0), value: isSearching)
         }
+        .scrollTargetBehavior(CustomScrollTargetBehaviour())
         .background(.gray.opacity(0.15))
         .contentMargins(.top, 190, for: .scrollIndicators)
     }
@@ -60,11 +61,14 @@ struct Home: View {
                             Image(systemName: "xmark")
                                 .font(.title3)
                         }
+                        .transition(.asymmetric(insertion: .push(from: .bottom), removal: .push(from: .top)))
                     }
                 }
+                .foregroundStyle(Color.primary)
                 .padding(.vertical, 10)
                 .padding(.horizontal, 15 - (progress * 15))
                 .frame(height: 45)
+                .clipShape(.capsule)
                 .background {
                     RoundedRectangle(cornerRadius: 25 - (progress * 25))
                         .fill(.background)
@@ -135,6 +139,20 @@ struct Home: View {
             }
             .foregroundStyle(.gray.opacity(0.25))
             .padding(.horizontal, 15)
+        }
+    }
+}
+
+
+
+struct CustomScrollTargetBehaviour: ScrollTargetBehavior {
+    func updateTarget(_ target: inout ScrollTarget, context: TargetContext) {
+        if target.rect.minY < 70 {
+            if target.rect.minY < 35 {
+                target.rect.origin = .zero
+            } else {
+                target.rect.origin = .init(x: 0, y: 70)
+            }
         }
     }
 }
