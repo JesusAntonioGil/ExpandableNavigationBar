@@ -10,6 +10,7 @@ import SwiftUI
 
 struct Home: View {
     @State private var searchText: String = ""
+    @FocusState private var isSearching: Bool
     @State private var activeTab: Tab = .all
     @Environment(\.colorScheme) private var scheme
     @Namespace private var animation
@@ -24,8 +25,10 @@ struct Home: View {
             .safeAreaInset(edge: .top, spacing: 0) {
                 ExpandableNaigationBar()
             }
+            .animation(.snappy(duration: 0.3, extraBounce: 0), value: isSearching)
         }
         .background(.gray.opacity(0.15))
+        .contentMargins(.top, 190, for: .scrollIndicators)
     }
     
     
@@ -33,6 +36,7 @@ struct Home: View {
     private func ExpandableNaigationBar(_ title: String = "Messages") -> some View {
         GeometryReader { proxy in
             let minY = proxy.frame(in: .scrollView(axis: .vertical)).minY
+            let progress = isSearching ? 1 : max(min(-minY / 70, 1), 0)
             
             VStack(spacing: 10) {
                 // Title
@@ -47,13 +51,27 @@ struct Home: View {
                         .font(.title3)
                     
                     TextField("Search Conversations", text: $searchText)
+                        .focused($isSearching)
+                    
+                    if isSearching {
+                        Button {
+                            isSearching = false
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.title3)
+                        }
+                    }
                 }
                 .padding(.vertical, 10)
-                .padding(.horizontal, 15)
+                .padding(.horizontal, 15 - (progress * 15))
                 .frame(height: 45)
                 .background {
-                    RoundedRectangle(cornerRadius: 25)
+                    RoundedRectangle(cornerRadius: 25 - (progress * 25))
                         .fill(.background)
+                        .shadow(color: .gray.opacity(0.25), radius: 5, x: 0, y: 5)
+                        .padding(.top, -progress * 190)
+                        .padding(.bottom, -progress * 65)
+                        .padding(.horizontal, -progress * 15)
                 }
                 
                 //Custom Segemented Picker
@@ -89,10 +107,12 @@ struct Home: View {
             }
             .padding(.top, 25)
             .safeAreaPadding(.horizontal, 15)
-            .offset(y: minY < 0 ? -minY : 0)
+            .offset(y: minY < 0 || isSearching ? -minY : 0)
+            .offset(y: -progress * 65)
         }
         .frame(height: 190)
         .padding(.bottom, 10)
+        .padding(.bottom, isSearching ? -65 : 0)
     }
     
     @ViewBuilder
