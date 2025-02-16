@@ -37,12 +37,15 @@ struct Home: View {
     private func ExpandableNaigationBar(_ title: String = "Messages") -> some View {
         GeometryReader { proxy in
             let minY = proxy.frame(in: .scrollView(axis: .vertical)).minY
+            let scrollViewHeight = proxy.bounds(of: .scrollView(axis: .vertical))?.height ?? 0
+            let scaleProgress = minY > 0 ? 1 + (max(min(minY / scrollViewHeight, 1), 0) * 0.5) : 1
             let progress = isSearching ? 1 : max(min(-minY / 70, 1), 0)
             
             VStack(spacing: 10) {
                 // Title
                 Text(title)
                     .font(.largeTitle.bold())
+                    .scaleEffect(scaleProgress, anchor: .topLeading)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.bottom, 10)
                 
